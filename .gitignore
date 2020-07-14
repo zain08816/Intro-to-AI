@@ -1,2 +1,5 @@
 .DS_Store
 __pycache__
+projects/project_1/src/Forward_A*_sol
+projects/project_1/src/Backwards_A*_sol
+projects/project_1/src/Adaptive_A*_sol
