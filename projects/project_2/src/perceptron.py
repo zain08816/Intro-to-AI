@@ -64,12 +64,12 @@ class PerceptronClassifier:
             target = counter
             label = x
 
-        t = trainingLabels[i]
+        training_label = trainingLabels[i]
 
-        if label == t:
+        if label == training_label:
           continue
         else:
-          self.weights[t] = self.weights[t] + trainingData[i]
+          self.weights[training_label] = self.weights[training_label] + trainingData[i]
           self.weights[label] = self.weights[label] - trainingData[i]
       
       val = self.classify(validationData)
