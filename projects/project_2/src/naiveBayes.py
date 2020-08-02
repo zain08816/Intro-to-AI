@@ -60,9 +60,73 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-        
+    count = util.Counter()
+    prior_D = util.Counter()
+
+    for label in trainingLabels:
+      count[label] += 1
+      prior_D[label] += 1
+
+    count = {}
+
+    for feat in self.features:
+      count[feat] = {}
+
+      for label in self.legalLabels:
+        count[feat][label] = {
+          0: 0,
+          1: 0
+        }
+
+    for i in range(len(trainingData)):
+      datum = trainingData[i]
+      label = trainingLabels[i]
+
+      for (feat, val) in datum.items():
+        count[feat][label][val] += 1
+
+    prior_D.normalize()
+    self.prior_D = prior_D
+
+    best_K = -1
+    best_Acc = -1
+    for k in kgrid:
+      temp_prob = {}
+      for (feat, labels) in count.items():
+        temp_prob[feat] = {}
+        for (label, vals) in labels.items():
+          temp_prob[feat][label] = {}
+          total = sum(count[feat][label].values())
+          total += 2*k
+          for(val, c)  in vals.items():
+            temp_prob[feat][label][val] = (count[feat][label][val] + k) / total
+
+      self.probs = temp_prob
+      predictions = self.classify(validationData)
+
+      acc = 0
+      for i in range(len(predictions)):
+        if predictions[i] == validationLabels[i]:
+          acc += 1
+      
+      if acc > best_Acc:
+        best_K = k
+        best_Acc = acc
+    
+    t_prob = {}
+    for (feat, labels) in count.items():
+      t_prob[feat] = {}
+
+      for (label, vals) in labels.items():
+        t_prob[feat][label] = {}
+        total = sum(count[feat][label].values())
+        total += 2*best_K
+        for (val, c) in vals.items():
+          t_prob[feat][label][val] = (count[feat][label][val] + best_K) / total
+
+    self.probs = t_prob
+    
+
   def classify(self, testData):
     """
     Classify the data based on the posterior distribution over labels.
@@ -87,9 +151,14 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
     logJoint = util.Counter()
-    
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    for label in self.legalLabels:
+      logJoint[label] = math.log(self.prior_D[label])
+
+      for (feat, val) in datum.items():
+        p = self.probs[feat][label][val];
+        logJoint[label] += math.log(p)
+
     
     return logJoint
   
@@ -100,12 +169,8 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     
     Note: you may find 'self.features' a useful way to loop through all possible features
     """
-    featuresOdds = []
-       
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
-    return featuresOdds
+    return list(map(lambda x: x[1], sorted([(self.probs[feat][label1][1] / self.probs[feat][label2][1], feat) for feat in self.features ])[-100:]))
     
 
     
