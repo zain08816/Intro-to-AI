@@ -67,7 +67,7 @@ class PerceptronClassifier:
         training_label = trainingLabels[i]
 
         if label == training_label:
-          continue
+          pass
         else:
           self.weights[training_label] = self.weights[training_label] + trainingData[i]
           self.weights[label] = self.weights[label] - trainingData[i]
@@ -110,4 +110,4 @@ class PerceptronClassifier:
     Returns a list of the 100 features with the greatest weight for some label
     """
 
-    return self.weights[label].sortedKeys()[:100]
+    return []
