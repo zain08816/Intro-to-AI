@@ -114,6 +114,7 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
   
   # Put any code here...
   # Example of use:
+  count = 0
   for i in range(len(guesses)):
       prediction = guesses[i]
       truth = testLabels[i]
@@ -123,7 +124,9 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
           print("Predicted %d; truth is %d" % (prediction, truth))
           print("Image: ")
           print(rawTestData[i])
-          break
+          count += 1
+          if count == options.verdict:
+            break
 
 
 ## =====================
@@ -180,7 +183,7 @@ def readCommand( argv ):
   parser.add_option('-i', '--iterations', help=default("Maximum iterations to run training"), default=3, type="int")
   parser.add_option('-s', '--test', help=default("Amount of test data to use"), default=TEST_SET_SIZE, type="int")
   parser.add_option('-r', '--run', help=default("Run full percentage test"), default=False, action="store_true")
-
+  parser.add_option('-v', '--verdict', help=default("See n wrong predictions"), default=1, type="int")
   options, otherjunk = parser.parse_args(argv)
   if len(otherjunk) != 0: raise Exception('Command line input not understood: ' + str(otherjunk))
   args = {}
