@@ -113,18 +113,18 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
         best_K = k
         best_Acc = acc
     
-    t_prob = {}
+    Prob = {}
     for (feat, labels) in count.items():
-      t_prob[feat] = {}
+      Prob[feat] = {}
 
       for (label, vals) in labels.items():
-        t_prob[feat][label] = {}
+        Prob[feat][label] = {}
         total = sum(count[feat][label].values())
         total += 2*best_K
         for (val, c) in vals.items():
-          t_prob[feat][label][val] = (count[feat][label][val] + best_K) / total
+          Prob[feat][label][val] = (count[feat][label][val] + best_K) / total
 
-    self.probs = t_prob
+    self.probs = Prob
     
 
   def classify(self, testData):
@@ -170,7 +170,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     Note: you may find 'self.features' a useful way to loop through all possible features
     """
 
-    return list(map(lambda x: x[1], sorted([(self.probs[feat][label1][1] / self.probs[feat][label2][1], feat) for feat in self.features ])[-100:]))
+    return {}
     
 
     
