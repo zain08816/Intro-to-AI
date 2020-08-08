@@ -79,12 +79,6 @@ class PerceptronClassifier:
 
       print "epoch:", epoch, " accuracy:", (100.0 * global_ / len(validationData))
 
-      if global_ > correct:
-        new_weights = self.weights.copy()
-        correct = global_
-      
-    self.weights = new_weights
-
         
     
   def classify(self, data ):
