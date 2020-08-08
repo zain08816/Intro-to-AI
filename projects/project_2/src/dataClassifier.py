@@ -179,7 +179,7 @@ def readCommand( argv ):
   parser.add_option('-a', '--autotune', help=default("Whether to automatically tune hyperparameters"), default=False, action="store_true")
   parser.add_option('-i', '--iterations', help=default("Maximum iterations to run training"), default=3, type="int")
   parser.add_option('-s', '--test', help=default("Amount of test data to use"), default=TEST_SET_SIZE, type="int")
-  parser.add_option('-r', '--random', help=default("Trains the data set using random data and calculates averages for percent accuracy and standard deviation"), default=False, action="store_true")
+  parser.add_option('-r', '--run', help=default("Run full percentage test"), default=False, action="store_true")
 
   options, otherjunk = parser.parse_args(argv)
   if len(otherjunk) != 0: raise Exception('Command line input not understood: ' + str(otherjunk))
@@ -282,7 +282,7 @@ def runClassifier(args, options):
   printImage = args['printImage']
       
   # Load data 
-  if(options.random):
+  if(options.run == True):
     numberOfTestPoints = 150 if options.data=="faces" else 1000
     numberOfValidationPoints = 301 if options.data=="faces" else 1000
     totalTrainData = 451 if options.data=="faces" else 5000
@@ -318,8 +318,8 @@ def runClassifier(args, options):
       accuracy = []
       times = []
       print "\n"
-      for runCount in range(0, 2):
-        print "===============\n"
+      for runCount in range(0, 5):
+        print "==============="
         print "("+str(runCount+1)+")" +  " Extracting random " + str((percent * 10)) + "% of the training data..."
         numSubTraining = int((percent / 10.0) * totalTrainData)
         indexes = random.sample(range(0, totalTrainData), numSubTraining)
@@ -355,7 +355,7 @@ def runClassifier(args, options):
       avgAccuracy = sum(accuracy)/len(accuracy)
       avgTime = sum(times)/len(times)
 
-      print("=================\n")
+      print("=================")
       print "Average training time for", numSubTraining, "data points: %0.4f" % avgTime
       print "Average accuracy of " + str(percent * 10) + ("% data training: "), str(avgAccuracy)
 
