@@ -9,7 +9,6 @@
 # This file contains feature extraction methods and harness 
 # code for data classification
 
-import mostFrequent
 import naiveBayes
 import perceptron
 import samples
@@ -170,7 +169,7 @@ def readCommand( argv ):
   from optparse import OptionParser  
   parser = OptionParser(USAGE_STRING)
   
-  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['mostFrequent', 'nb', 'naiveBayes', 'perceptron'], default='mostFrequent')
+  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['nb', 'naiveBayes', 'perceptron'], default='naiveBayes')
   parser.add_option('-d', '--data', help=default('Dataset to use'), choices=['digits', 'faces'], default='digits')
   parser.add_option('-t', '--training', help=default('The size of the training set'), default=100, type="int")
   parser.add_option('-f', '--features', help=default('Whether to use enhanced features'), default=False, action="store_true")
@@ -238,9 +237,8 @@ def readCommand( argv ):
       print( USAGE_STRING)
       sys.exit(2)
 
-  if(options.classifier == "mostFrequent"):
-    classifier = mostFrequent.MostFrequentClassifier(legalLabels)
-  elif(options.classifier == "naiveBayes" or options.classifier == "nb"):
+
+  if(options.classifier == "naiveBayes" or options.classifier == "nb"):
     classifier = naiveBayes.NaiveBayesClassifier(legalLabels)
     classifier.setSmoothing(options.smoothing)
     if (options.autotune):
@@ -286,29 +284,31 @@ def runClassifier(args, options):
       
   # Load data 
   if(options.run == True):
-    numberOfTestPoints = 150 if options.data=="faces" else 1000
-    numberOfValidationPoints = 301 if options.data=="faces" else 1000
-    totalTrainData = 451 if options.data=="faces" else 5000
-    numValidation = numberOfValidationPoints
-    numTest = numberOfTestPoints
-    numTraining = totalTrainData
 
+    if options.data=="faces":
+      numTest = 150
+      numValidation = 301
+      numTraining = 451
+    else:
+      numTest = 1000
+      numValidation = 1000
+      numTraining = 5000
 
-
+ 
     if(options.data=="faces"):
-        rawTestData = samples.loadDataFile("facedata/facedatatest", numTest,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
-        testLabels = samples.loadLabelsFile("facedata/facedatatestlabels", numTest)
-        rawValidationData = samples.loadDataFile("facedata/facedatatrain", numValidation,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
-        validationLabels = samples.loadLabelsFile("facedata/facedatatrainlabels", numValidation)
         rawTrainingData = samples.loadDataFile("facedata/facedatatrain", numTraining,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
         trainingLabels = samples.loadLabelsFile("facedata/facedatatrainlabels", numTraining)
+        rawValidationData = samples.loadDataFile("facedata/facedatatrain", numValidation,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
+        validationLabels = samples.loadLabelsFile("facedata/facedatatrainlabels", numValidation)
+        rawTestData = samples.loadDataFile("facedata/facedatatest", numTest,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
+        testLabels = samples.loadLabelsFile("facedata/facedatatestlabels", numTest)
     else:
-        rawTestData = samples.loadDataFile("digitdata/testimages", numTest,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
-        testLabels = samples.loadLabelsFile("digitdata/testlabels", numTest)
-        rawValidationData = samples.loadDataFile("digitdata/validationimages", numValidation,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
-        validationLabels = samples.loadLabelsFile("digitdata/validationlabels", numValidation)
         rawTrainingData = samples.loadDataFile("digitdata/trainingimages", numTraining,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
         trainingLabels = samples.loadLabelsFile("digitdata/traininglabels", numTraining)
+        rawValidationData = samples.loadDataFile("digitdata/validationimages", numValidation,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+        validationLabels = samples.loadLabelsFile("digitdata/validationlabels", numValidation)
+        rawTestData = samples.loadDataFile("digitdata/testimages", numTest,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+        testLabels = samples.loadLabelsFile("digitdata/testlabels", numTest)
       
     
     # Extract features
@@ -320,12 +320,9 @@ def runClassifier(args, options):
     for percent in range(1, 11):
       accuracy = []
       times = []
-      print "\n"
       for runCount in range(0, 5):
-        print "==============="
-        print "("+str(runCount+1)+")" +  " Extracting random " + str((percent * 10)) + "% of the training data..."
-        numSubTraining = int((percent / 10.0) * totalTrainData)
-        indexes = random.sample(range(0, totalTrainData), numSubTraining)
+        numSubTraining = int((percent / 10.0) * numTraining)
+        indexes = random.sample(range(0, numTraining), numSubTraining)
         subTrainingData = []
         subTrainingLabels = []
 
@@ -334,6 +331,7 @@ def runClassifier(args, options):
           subTrainingLabels.append(trainingLabels[indx])
 
         #training and testing
+        print "\n"
         start = time.time()
         print "("+str(runCount + 1)+")", "Training on", numSubTraining, "data points..."
         classifier.train(subTrainingData, subTrainingLabels, validationData, validationLabels)

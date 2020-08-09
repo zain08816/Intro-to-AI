@@ -28,6 +28,17 @@ class PerceptronClassifier:
   def setWeights(self, weights):
     assert len(weights) == len(self.legalLabels);
     self.weights == weights;
+
+  def activation(self, x, f, target, label):
+          if target is None:
+            target = f
+            label = x
+          elif f > target:
+            target = f
+            label = x
+
+          return (target, label)
+
       
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
     """
@@ -53,31 +64,27 @@ class PerceptronClassifier:
         label = None
 
         for x in self.legalLabels:
-          counter = 0
-          for f, num in trainingData[i].items():
-            counter += num * self.weights[x][f]
+          f = 0
+          for feat, theta in trainingData[i].items():
+            f += theta * self.weights[x][feat]
+          target, label = self.activation(x, f, target, label)
 
-          if target is None:
-            target = counter
-            label = x
-          elif counter > target:
-            target = counter
-            label = x
+        actual_label = trainingLabels[i]
 
-        training_label = trainingLabels[i]
-
-        if label != training_label:
-          self.weights[training_label] = self.weights[training_label] + trainingData[i]
+        if label != actual_label:
           self.weights[label] = self.weights[label] - trainingData[i]
-      
+          self.weights[actual_label] = self.weights[actual_label] + trainingData[i]
+          
+
+          
       guesses = self.classify(validationData)
 
-      global_ = 0
+      accuracy = 0
       for j in range(len(validationLabels)):
         if guesses[j] == validationLabels[j]:
-          global_ += 1
+          accuracy += 1
 
-      print "epoch:", epoch, " accuracy:", (100.0 * global_ / len(validationData))
+      print "epoch:", epoch, " accuracy:", (100.0 * accuracy / len(validationData))
 
         
     
