@@ -60,18 +60,19 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
 
-    count = util.Counter()
-    prior_D = util.Counter()
-
+    prior = util.Counter()
     for label in trainingLabels:
-      count[label] += 1
-      prior_D[label] += 1
+      prior[label] += 1
+    # makes each counts into a percent of total counts in the counter. 
+    # i.e all counts will equal to 1 if summed
+    # used in logjoinprob
+    prior.normalize()
+    self.prior = prior
+
 
     count = {}
-
     for feat in self.features:
       count[feat] = {}
-
       for label in self.legalLabels:
         count[feat][label] = {
           0: 0,
@@ -82,49 +83,22 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       datum = trainingData[i]
       label = trainingLabels[i]
 
-      for (feat, val) in datum.items():
+      for feat, val in datum.items():
         count[feat][label][val] += 1
 
-    prior_D.normalize()
-    self.prior_D = prior_D
-
-    best_K = -1
-    best_Acc = -1
-    for k in kgrid:
-      temp_prob = {}
-      for (feat, labels) in count.items():
-        temp_prob[feat] = {}
-        for (label, vals) in labels.items():
-          temp_prob[feat][label] = {}
-          total = sum(count[feat][label].values())
-          total += 2*k
-          for(val, c)  in vals.items():
-            temp_prob[feat][label][val] = (count[feat][label][val] + k) / total
-
-      self.probs = temp_prob
-      predictions = self.classify(validationData)
-
-      acc = 0
-      for i in range(len(predictions)):
-        if predictions[i] == validationLabels[i]:
-          acc += 1
-      
-      if acc > best_Acc:
-        best_K = k
-        best_Acc = acc
     
-    Prob = {}
-    for (feat, labels) in count.items():
-      Prob[feat] = {}
-
-      for (label, vals) in labels.items():
-        Prob[feat][label] = {}
+    # Naive Bayes
+    prob = {}
+    for feat, labels in count.items():
+      prob[feat] = {}
+      for label, vals in labels.items():
+        prob[feat][label] = {}
         total = sum(count[feat][label].values())
-        total += 2*best_K
-        for (val, c) in vals.items():
-          Prob[feat][label][val] = (count[feat][label][val] + best_K) / total
+        total += 2*kgrid[0]
+        for val, c in vals.items():
+          prob[feat][label][val] = (count[feat][label][val] + kgrid[0]) / total
 
-    self.probs = Prob
+    self.probs = prob
     
 
   def classify(self, testData):
@@ -153,7 +127,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     logJoint = util.Counter()
 
     for label in self.legalLabels:
-      logJoint[label] = math.log(self.prior_D[label])
+      logJoint[label] = math.log(self.prior[label])
 
       for (feat, val) in datum.items():
         p = self.probs[feat][label][val];
