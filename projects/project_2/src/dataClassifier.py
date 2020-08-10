@@ -373,9 +373,17 @@ def runClassifier(args, options):
 
   else:
     # Conduct training and testing
-    numTraining = options.training
-    numTest = options.test
-    classifier.extra = True
+
+    if options.data=="faces":
+      numTest = 150
+      numValidation = 301
+      numTraining = 451
+    else:
+      numTest = 1000
+      numValidation = 1000
+      numTraining = 5000
+
+    
 
     if(options.data=="faces"):
       rawTrainingData = samples.loadDataFile("facedata/facedatatrain", numTraining,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
@@ -391,14 +399,29 @@ def runClassifier(args, options):
       validationLabels = samples.loadLabelsFile("digitdata/validationlabels", numTest)
       rawTestData = samples.loadDataFile("digitdata/testimages", numTest,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
       testLabels = samples.loadLabelsFile("digitdata/testlabels", numTest)
-        
+    
+
+    numTest = options.test
+    classifier.extra = True
+
     print "Extracting features..."
     trainingData = map(featureFunction, rawTrainingData)
     validationData = map(featureFunction, rawValidationData)
     testData = map(featureFunction, rawTestData)
 
+    numSubTraining = options.training
+    indexes = random.sample(range(0, numTraining), numSubTraining)
+    subTrainingData = []
+    subTrainingLabels = []
+
+    for indx in indexes:
+      subTrainingData.append(trainingData[indx])
+      subTrainingLabels.append(trainingLabels[indx])
+
+
+
     print( "Training...")
-    classifier.train(trainingData, trainingLabels, validationData, validationLabels)
+    classifier.train(subTrainingData, subTrainingLabels, validationData, validationLabels)
     print( "Validating...")
     guesses = classifier.classify(validationData)
     correct = [guesses[i] == validationLabels[i] for i in range(len(validationLabels))].count(True)

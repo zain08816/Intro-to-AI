@@ -60,12 +60,13 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     self.legalLabels.
     """
 
+    alpha = kgrid[0]
+
     prior = util.Counter()
     for label in trainingLabels:
       prior[label] += 1
     # makes each counts into a percent of total counts in the counter. 
     # i.e all counts will equal to 1 if summed
-    # used in logjoinprob
     prior.normalize()
     self.prior = prior
 
@@ -74,10 +75,7 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     for feat in self.features:
       count[feat] = {}
       for label in self.legalLabels:
-        count[feat][label] = {
-          0: 0,
-          1: 0
-        }
+        count[feat][label] = {0: 0, 1: 0}
 
     for i in range(len(trainingData)):
       datum = trainingData[i]
@@ -93,10 +91,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
       prob[feat] = {}
       for label, vals in labels.items():
         prob[feat][label] = {}
-        total = sum(count[feat][label].values())
-        total += 2*kgrid[0]
+        class_total = sum(count[feat][label].values())
         for val, c in vals.items():
-          prob[feat][label][val] = (count[feat][label][val] + kgrid[0]) / total
+          prob[feat][label][val] = (count[feat][label][val] + alpha) / (class_total*2*alpha)
 
     self.probs = prob
     
@@ -108,11 +105,13 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     You shouldn't modify this method.
     """
     guesses = []
-    self.posteriors = [] # Log posteriors are stored for later data analysis (autograder).
     for datum in testData:
-      posterior = self.calculateLogJointProbabilities(datum)
+      posterior = util.Counter()
+      for label in self.legalLabels:
+        posterior[label] = math.log(self.prior[label])
+        for feat, val in datum.items():
+          posterior[label] += math.log(self.probs[feat][label][val])
       guesses.append(posterior.argMax())
-      self.posteriors.append(posterior)
     return guesses
       
   def calculateLogJointProbabilities(self, datum):
@@ -126,14 +125,6 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     """
     logJoint = util.Counter()
 
-    for label in self.legalLabels:
-      logJoint[label] = math.log(self.prior[label])
-
-      for (feat, val) in datum.items():
-        p = self.probs[feat][label][val];
-        logJoint[label] += math.log(p)
-
-    
     return logJoint
   
   def findHighOddsFeatures(self, label1, label2):

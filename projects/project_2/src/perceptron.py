@@ -56,7 +56,7 @@ class PerceptronClassifier:
     # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING, OR
     # THE AUTOGRADER WILL LIKELY DEDUCT POINTS.
 
-    correct = 0
+
     for epoch in range(self.max_iterations):
       print "Starting epoch ", epoch, "..."
       for i in range(len(trainingData)):
@@ -72,8 +72,8 @@ class PerceptronClassifier:
         actual_label = trainingLabels[i]
 
         if label != actual_label:
-          self.weights[label] = self.weights[label] - trainingData[i]
-          self.weights[actual_label] = self.weights[actual_label] + trainingData[i]
+          self.weights[label] -= trainingData[i]
+          self.weights[actual_label] += trainingData[i]
           
 
           
