@@ -77,14 +77,14 @@ class PerceptronClassifier:
           
 
           
-      guesses = self.classify(validationData)
+      # guesses = self.classify(validationData)
 
-      accuracy = 0
-      for j in range(len(validationLabels)):
-        if guesses[j] == validationLabels[j]:
-          accuracy += 1
+      # accuracy = 0
+      # for j in range(len(validationLabels)):
+      #   if guesses[j] == validationLabels[j]:
+      #     accuracy += 1
 
-      print "epoch:", epoch, " accuracy:", (100.0 * accuracy / len(validationData))
+      # print "epoch:", epoch, " accuracy:", (100.0 * accuracy / len(validationData))
 
         
     

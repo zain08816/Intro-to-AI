@@ -108,9 +108,9 @@ class NaiveBayesClassifier(classificationMethod.ClassificationMethod):
     for datum in testData:
       posterior = util.Counter()
       for label in self.legalLabels:
-        posterior[label] = self.prior[label]
+        posterior[label] = math.log(self.prior[label])
         for feat, val in datum.items():
-          posterior[label] *= self.probs[feat][label][val]
+          posterior[label] += math.log(self.probs[feat][label][val])
       guesses.append(posterior.argMax())
     return guesses
       
